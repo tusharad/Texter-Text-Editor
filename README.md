@@ -15,9 +15,12 @@ This text editor is written for learning purpose only. Hence it is still buggy. 
 2) Font and color settings.
 
 # Screenshots
-![Alt Text](Screenshot(113).png)
-![Alt Text](screenshots/Screenshot(114).png)
-![Alt Text](screenshots/Screenshot(115).png)
+![Alt Text](101.png)
+![Alt Text](102.png)
+![Alt Text](103.png)
+![Alt Text](104.png)
+
+
 
 # Installation
 1) Build the jar file using any Java IDE.
