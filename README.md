@@ -9,10 +9,11 @@ This text editor is written for learning purpose only. Hence it is still buggy. 
 3) Print.
 4) Cut/Copy/Paste.
 5) Undo/Redo.
+6) Find and replace.
 
 # Upcoming Features
-1) Find and replace.
-2) Font and color settings.
+1) Font and color settings.
+2) Bottom line for line number and number of characters.
 
 # Screenshots
 
