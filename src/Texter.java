@@ -4,7 +4,10 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Document;
+import javax.swing.text.Highlighter;
 import javax.swing.undo.UndoManager;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
@@ -89,6 +92,10 @@ public class Texter extends JFrame implements ActionListener {
         cutDoc.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, ActionEvent.CTRL_MASK));
         cutDoc.addActionListener(this);
 
+        JMenuItem findDoc = new JMenuItem("Find");
+        findDoc.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, ActionEvent.CTRL_MASK));
+        findDoc.addActionListener(this);
+
         JMenuItem select_allDoc = new JMenuItem("Select All");
         select_allDoc.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, ActionEvent.CTRL_MASK));
         select_allDoc.addActionListener(this);
@@ -96,6 +103,7 @@ public class Texter extends JFrame implements ActionListener {
         edit.add(copyDoc);
         edit.add(pasteDoc);
         edit.add(cutDoc);
+        edit.add(findDoc);
         edit.add(undoDoc);
         edit.add(redoDoc);
         edit.add(select_allDoc);
@@ -209,6 +217,12 @@ public class Texter extends JFrame implements ActionListener {
                     setTitle(frameTitle + "*");
                 }
             };
+            Document doc = area.getDocument();
+            doc.addUndoableEditListener(new UndoableEditListener() {
+                public void undoableEditHappened(UndoableEditEvent evt) {
+                    undoManager.addEdit(evt.getEdit());
+                }
+            });
             area.getDocument().addDocumentListener(documentListener);
         } catch (Exception ignored) {
         }
@@ -276,6 +290,10 @@ public class Texter extends JFrame implements ActionListener {
         area.selectAll();
     }
 
+    void search(){
+       new findMenu();
+    }
+
     void About() {
         new About().setVisible(true);
     }
@@ -284,49 +302,99 @@ public class Texter extends JFrame implements ActionListener {
         System.exit(0);
     }
 
+
     public void actionPerformed(ActionEvent e) {
         String cmd = e.getActionCommand();
         System.out.println(cmd);
         switch (cmd) {
-            case "New":
-                New();
-                break;
-            case "Open":
-                open();
-                break;
-            case "Save":
-                save();
-                break;
-            case "Save as":
-                saveAs();
-                break;
-            case "Print":
-                printDoc();
-                break;
-            case "Exit":
-                Exit();
-                break;
-            case "Copy":
-                copy();
-                break;
-            case "Paste":
-                paste();
-                break;
-            case "Cut":
-                cut();
-                break;
-            case "Select All":
-                selectAll();
-                break;
-            case "About":
-                About();
-                break;
-            case "Undo":
-                Undo();
-                break;
-            case "Redo":
-                Redo();
-                break;
+            case "New" -> New();
+            case "Open" -> open();
+            case "Save" -> save();
+            case "Save as" -> saveAs();
+            case "Print" -> printDoc();
+            case "Exit" -> Exit();
+            case "Copy" -> copy();
+            case "Paste" -> paste();
+            case "Cut" -> cut();
+            case "Find" -> search();
+            case "Select All" -> selectAll();
+            case "About" -> About();
+            case "Undo" -> Undo();
+            case "Redo" -> Redo();
+        }
+    }
+
+     class findMenu extends JFrame implements ActionListener{
+        JTextField tf,fr;
+        JButton bt;
+        JButton findReplace;
+        findMenu(){
+        setTitle("Find");
+            setBounds(0, 0, 300, 200);
+            tf = new JTextField();
+            fr = new JTextField();
+            tf.setBounds(30,10,150,20);
+            bt = new JButton("Find");
+            bt.setBounds(30,35,100,30);
+            fr.setBounds(30,70,150,20);
+            findReplace = new JButton("Find and Replace");
+            findReplace.setBounds(30,95,100,30);
+            bt.addActionListener(this);
+            add(tf);
+            add(findReplace);
+            add(fr);
+            add(bt);
+            setLayout(null);
+            setVisible(true);
+
+            findReplace.addActionListener( new ActionListener()
+            {
+                @Override
+                public void actionPerformed(ActionEvent e)
+                {
+                    try
+                    {
+                        String findText = tf.getText();
+                        int findLength = findText.length();
+                        String replaceText = fr.getText();
+                        int replaceLength = replaceText.length();
+
+                        Document doc = Texter.this.area.getDocument();
+                        String text = doc.getText(0, doc.getLength());
+                        int offset = 0;
+
+                        while ((offset = text.indexOf(findText, offset)) != -1)
+                        {
+                            Texter.this.area.select(offset, offset + findLength);
+                            Texter.this.area.replaceSelection( replaceText );
+
+                            offset += replaceLength;
+                            text = doc.getText(0, doc.getLength());
+                        }
+                    }
+                    catch(BadLocationException ble) {}
+                }
+            });
+        }
+        public void actionPerformed(ActionEvent e){
+            Highlighter hl = Texter.this.area.getHighlighter();
+            hl.removeAllHighlights();
+
+            String pattern = tf.getText();
+            String text = Texter.this.area.getText();
+            int index = text.indexOf(pattern);
+            System.out.println("index : "+index);
+            if(index == -1){
+                JOptionPane.showMessageDialog(null, "No pattern Found!!");
+            }
+            while(index >= 0){
+                try {
+                    Object o = hl.addHighlight(index, index + pattern.length(), DefaultHighlighter.DefaultPainter);
+                    index = text.indexOf(pattern, index + pattern.length());
+                } catch (BadLocationException ex) {
+                    ex.printStackTrace();
+                }
+            }
         }
     }
 
